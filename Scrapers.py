@@ -1,4 +1,5 @@
 from typing import List
+from time import sleep
 import numpy
 import pandas as pd
 from selenium import webdriver
@@ -25,7 +26,7 @@ class Scraper:
 
         driver = self.driver
         driver.get(HEATRHOW_DEPARTURES)
-        
+
         ''' XPATH location for the time you wish to start collecting plane data from - on Heathrow Departures this is a drop down '''
         time_selector = Select(driver.find_element(By.XPATH, '//*[@id="airline-list-from-time"]'))
         time_selector.select_by_index(1)
@@ -77,7 +78,19 @@ class Scraper:
         driver = self.driver
         driver.get(GATWICK_DEPARTURES)
 
+        later = driver.find_element(By.XPATH, '//*[@id="later-button"]')
+        xp_sections = 'flight-info-row'
+        while(True):
+            sections = driver.find_elements(By.CLASS_NAME, xp_sections)
+            for flight in sections: 
+                print(flight.text)
 
+            '''' TODO: think about how to find the :after tag '''
+            print(later.get_attribute())
+            if later.get_attribute('innerHTML').find('::after') != -1: 
+                driver.execute_script("arguments[0].click()", later)
+            else: 
+                break 
 
         return dataframes
 
@@ -87,9 +100,9 @@ class Scraper:
 
 scraper = Scraper() 
 
-heathrow_flights_dfs: List[pd.DataFrame] = scraper.heathrow_departures()
-for frame in heathrow_flights_dfs: 
-    print(frame)
+# heathrow_flights_dfs: List[pd.DataFrame] = scraper.heathrow_departures()
+# for frame in heathrow_flights_dfs: 
+#     print(frame)
 
 gatwick_flights_dfs: List[pd.DataFrame] = scraper.gatwick_departures()
 for frame in gatwick_flights_dfs: 
